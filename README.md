@@ -3,9 +3,9 @@
 ## Usage
 
 - Either download the project zip-file from Github or clone using git
-- Download the latest Julia release for your system
+- Download the latest Julia release for your system: http://julialang.org
 - Navigate to the directory where you downloaded the project
-- laucnh julia
+- launch julia
 - Issue the following command from the julia command line:
 
 ```
