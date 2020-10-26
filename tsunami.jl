@@ -66,6 +66,7 @@ function elementmatrix(mesh, element)
     tangent3 = v2 - v1
     normal = (v1-v3) × (v2-v3)
     area = 0.5 * norm(normal)
+    normal = normalize(normal)
     grad1 = (normal × tangent1) / (2 *area)
     grad2 = (normal × tangent2) / (2 *area)
     grad3 = (normal × tangent3) / (2 *area)
