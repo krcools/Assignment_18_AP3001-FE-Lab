@@ -22,9 +22,11 @@ sea_vertices    = skeleton(sea, 0)
 # equations. This means that we will not be associating basis functions with vertices
 # on either boundary. After filtering out these vertices we are left with only
 # interior vertices.
-interior_vertices = submesh(sea_vertices) do v
-    v in border_vertices && return false
-    v in coast_vertices && return false
+in_border_vertices = in(border_vertices)
+in_coast_vertices = in(coast_vertices)
+interior_vertices = submesh(sea_vertices) do m,v
+    in_border_vertices(m,v) && return false
+    in_coast_vertices(m,v) && return false
     return true
 end
 
@@ -44,7 +46,7 @@ elements and from 1 to 2 for segments. The function returns an index `i` into
 `gl` return `nothing` otherwise.
 """
 function localtoglobal(active_vertices, domain)
-    conn = copy(transpose(connectivity(active_vertices, domain, abs)))
+    conn = connectivity(domain, active_vertices, abs)
     nz = nonzeros(conn)
     rv = rowvals(conn)
     function gl(k,p)
@@ -58,9 +60,10 @@ end
 
 
 function elementmatrix(mesh, element)
-    v1 = mesh.vertices[element[1]]
-    v2 = mesh.vertices[element[2]]
-    v3 = mesh.vertices[element[3]]
+
+    ch = chart(mesh, element)
+    v1, v2, v3 = ch.vertices
+
     tangent1 = v3 - v2
     tangent2 = v1 - v3
     tangent3 = v2 - v1
@@ -99,9 +102,9 @@ end
 
 
 function elementvector(f, mesh, element)
-    v1 = mesh.vertices[element[1]]
-    v2 = mesh.vertices[element[2]]
-    v3 = mesh.vertices[element[3]]
+
+    ch = chart(mesh, element)
+    v1, v2, v3 = ch.vertices
     el_size = norm((v1-v3)×(v2-v3))/2
     F = el_size * [
         f(v1)/3
@@ -143,8 +146,9 @@ u = S \ F
 
 u_tilda = zeros(length(sea_vertices))
 for (j,m) in enumerate(interior_vertices)
-    u_tilda[m[1]] = u[j]
+    idcs = CompScienceMeshes.indices(interior_vertices,m)
+    u_tilda[idcs[1]] = u[j]
 end
 
-using Makie
+using GLMakie
 Makie.mesh(vertexarray(sea), cellarray(sea), color=u_tilda)
